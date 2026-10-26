@@ -1,7 +1,7 @@
 {
   "name": "movie-server",
   "version": "1.0.0",
-  "description": "",
+  "description": "A local-network movie library and video streaming server",
   "main": "index.js",
   "scripts": {
     "start": "node server.js",
