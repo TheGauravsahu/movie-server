@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101114">
+  <title>My Movie Library</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #101114;
+      color: #f5f5f7;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 50% -25%, rgba(229, 9, 20, .2), transparent 55%),
+        #101114;
+    }
+
+    main {
+      width: min(1120px, 100%);
+      margin: 0 auto;
+      padding: 40px 28px 64px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #ff7078;
+      font-size: .75rem;
+      font-weight: 800;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 6vw, 3.4rem);
+      letter-spacing: -.055em;
+      line-height: 1;
+    }
+
+    .intro {
+      margin: 12px 0 28px;
+      color: #a7a8b0;
+      font-size: 1rem;
+    }
+
+    .player-panel {
+      overflow: hidden;
+      margin-bottom: 38px;
+      border: 1px solid #2b2c33;
+      border-radius: 18px;
+      background: #17181d;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      max-height: min(65vh, 680px);
+      aspect-ratio: 16 / 9;
+      background: #050506;
+    }
+
+    .player-caption {
+      min-height: 58px;
+      padding: 17px 20px;
+      color: #b9bac2;
+      overflow-wrap: anywhere;
+    }
+
+    .library-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.35rem;
+      letter-spacing: -.025em;
+    }
+
+    #count {
+      color: #92939c;
+      font-size: .9rem;
+      white-space: nowrap;
+    }
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      color: #92939c;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      min-height: 50px;
+      padding: 0 16px 0 44px;
+      border: 1px solid #34353d;
+      border-radius: 12px;
+      outline: none;
+      background: #191a20;
+      color: #fff;
+      font: inherit;
+    }
+
+    #search:focus { border-color: #e50914; }
+    #search::placeholder { color: #777983; }
+
+    #movies {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+      gap: 14px;
+    }
+
+    .movie {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 156px;
+      padding: 18px;
+      border: 1px solid #2c2d35;
+      border-radius: 14px;
+      background: linear-gradient(145deg, #202127, #18191e);
+      transition: border-color .18s ease, transform .18s ease;
+    }
+
+    .movie:hover {
+      border-color: #5a3034;
+      transform: translateY(-2px);
+    }
+
+    .movie-title {
+      display: -webkit-box;
+      overflow: hidden;
+      color: #f1f1f4;
+      font-size: 1rem;
+      font-weight: 650;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+
+    .movie button {
+      min-height: 42px;
+      margin-top: 18px;
+      border: 0;
+      border-radius: 9px;
+      background: #e50914;
+      color: #fff;
+      font: inherit;
+      font-size: .9rem;
+      font-weight: 750;
+      cursor: pointer;
+      transition: background .15s ease;
+    }
+
+    .movie button:hover { background: #f51b26; }
+    .movie button:focus-visible, #search:focus-visible {
+      outline: 2px solid #ff7078;
+      outline-offset: 3px;
+    }
+
+    .message {
+      grid-column: 1 / -1;
+      padding: 28px;
+      border: 1px dashed #3a3b43;
+      border-radius: 12px;
+      color: #a7a8b0;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .message.error { color: #ff9da2; }
+
+    @media (max-width: 600px) {
+      main { padding: 28px 16px 44px; }
+      .intro { margin-bottom: 22px; }
+      .player-panel { margin-bottom: 30px; border-radius: 13px; }
+      .player-caption { padding: 14px 16px; }
+      #movies { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .movie { min-height: 145px; padding: 14px; }
+    }
+
+    @media (max-width: 360px) {
+      #movies { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Your home cinema</p>
+    <h1>My Movies</h1>
+    <p class="intro">Pick a movie and enjoy it on this device.</p>
+
+    <section class="player-panel" aria-label="Movie player">
+      <video id="player" controls playsinline preload="metadata"></video>
+      <div class="player-caption" id="nowPlaying" aria-live="polite">
+        Choose a movie from your library to start watching.
+      </div>
+    </section>
+
+    <section aria-labelledby="library-title">
+      <div class="library-heading">
+        <h2 id="library-title">Your library</h2>
+        <span id="count" aria-live="polite"></span>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon" aria-hidden="true">⌕</span>
+        <input
+          id="search"
+          type="search"
+          placeholder="Search your movies..."
+          aria-label="Search movies"
+          autocomplete="off"
+        >
+      </div>
+      <div id="movies" aria-live="polite">
+        <div class="message">Loading your movie library...</div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const container = document.getElementById("movies");
+    const search = document.getElementById("search");
+    const player = document.getElementById("player");
+    const nowPlaying = document.getElementById("nowPlaying");
+    const count = document.getElementById("count");
+    let movies = [];
+
+    function showMessage(message, isError = false) {
+      const notice = document.createElement("div");
+      notice.className = isError ? "message error" : "message";
+      notice.textContent = message;
+      container.replaceChildren(notice);
+      count.textContent = "";
+    }
+
+    function renderMovies() {
+      const query = search.value.trim().toLocaleLowerCase();
+      const filtered = movies.filter((movie) =>
+        movie.title.toLocaleLowerCase().includes(query)
+      );
+
+      count.textContent = `${filtered.length} ${filtered.length === 1 ? "movie" : "movies"}`;
+      container.replaceChildren();
+
+      if (!filtered.length) {
+        showMessage(query ? "No movies match your search." : "No video files found in your Movies folder.");
+        count.textContent = "0 movies";
+        return;
+      }
+
+      filtered.forEach((movie) => {
+        const card = document.createElement("article");
+        card.className = "movie";
+
+        const title = document.createElement("div");
+        title.className = "movie-title";
+        title.textContent = movie.title;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "▶  Play movie";
+        button.setAttribute("aria-label", `Play ${movie.title}`);
+        button.addEventListener("click", () => {
+          player.src = movie.url;
+          nowPlaying.textContent = `Now playing: ${movie.title}`;
+          player.play().catch(() => {
+            nowPlaying.textContent = `Ready to play: ${movie.title}. Press play on the video controls.`;
+          });
+          player.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        card.append(title, button);
+        container.appendChild(card);
+      });
+    }
+
+    search.addEventListener("input", renderMovies);
+
+    fetch("/api/movies")
+      .then((response) => {
+        if (!response.ok) throw new Error("The movie server could not read your Movies folder.");
+        return response.json();
+      })
+      .then((data) => {
+        movies = data;
+        renderMovies();
+      })
+      .catch((error) => {
+        showMessage(`${error.message} Check the folder path and restart the server.`, true);
+      });
+  </script>
+</body>
+</html>
